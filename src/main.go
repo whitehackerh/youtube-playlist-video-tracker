@@ -50,14 +50,35 @@ func main() {
 		fmt.Printf("再生リスト: %s (%s) - %d本\n", item.Snippet.Title, item.Id, item.ContentDetails.ItemCount)
 	}
 	fmt.Println(response)
+	// id : 再生リストID
 
 	// JSONとして保存（任意）
 	f, _ := os.Create("my_playlists.json")
 	defer f.Close()
 	json.NewEncoder(f).Encode(response)
 
-	// 再生リストのレスポンスだけでは動画の情報が足りないため、動画IDをもとに、動画の詳細を取得するAPIをコール
-	// 50件ずつしか取得できないため、51件以上ある場合は、複数回コール
+	/* ----------------- */
+	/* 試しに再生リストに含まれる動画リストを取得するAPIを1回コールしてみる
+	// 再生リストのレスポンスだけでは動画の情報が足りないため、再生リストIDをもとに、再生リストに含まれる動画を取得するAPIをコール
+	// 再生リスト1件ずつしか指定できない -> 再生リストの数分並行でリクエスト
+	// 1度に最大50件の動画までしか取得できないため、再生リストに含まれる動画が51件以上ある場合は、複数回コール
+	*/
+	call2 := service.PlaylistItems.List([]string{"snippet"}).PlaylistId("test").MaxResults(50)
+	response2, err := call2.Do()
+	if err != nil {
+		log.Fatalf("API呼び出し失敗: %v", err)
+	}
+
+	// JSONとして保存（任意）
+	f2, _ := os.Create("my_playlist_items.json")
+	defer f2.Close()
+	json.NewEncoder(f2).Encode(response2)
+	// items[n].resourceId.videoId : 動画ID
+	// items[n].title : 動画タイトル
+	// items[n].videoOwnerChannelId : 投稿者チャンネルID
+	// items[n].videoOwnerChannelTitle : 投稿者チャンネルタイトル
+
+	/* ----------------- */
 
 	// 一致する動画IDの動画に動画の詳細をマージしていく
 
