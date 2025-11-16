@@ -1,6 +1,6 @@
 package entity
 
-type PlayList struct {
+type Playlist struct {
 	id     string
 	title  string
 	videos []Video
@@ -10,22 +10,22 @@ func NewPlayList(
 	id string,
 	title string,
 	videos []Video,
-) PlayList {
-	return PlayList{
+) Playlist {
+	return Playlist{
 		id:     id,
 		title:  title,
 		videos: videos,
 	}
 }
 
-func (p *PlayList) Id() string {
+func (p *Playlist) Id() string {
 	return p.id
 }
 
-func (p *PlayList) Title() string {
+func (p *Playlist) Title() string {
 	return p.title
 }
 
-func (p *PlayList) Videos() []Video {
+func (p *Playlist) Videos() []Video {
 	return p.videos
 }

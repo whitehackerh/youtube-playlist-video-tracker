@@ -7,10 +7,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"youtube-playlist-video-tracker/src/infrastructure"
+	"youtube-playlist-video-tracker/src/usecase"
+	"youtube-playlist-video-tracker/src/usecase/gateway"
+	"youtube-playlist-video-tracker/src/usecase/port"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -19,6 +22,8 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
+
 	credentials, err := loadCredentials(credentialsFilePath)
 	if err != nil {
 		fmt.Println("Error loading credentials:", err)
@@ -30,32 +35,47 @@ func main() {
 		log.Fatalf("OAuth設定の読み込み失敗: %v", err)
 	}
 
-	client := getClient(config)
-
-	// YouTubeサービスの作成
-	service, err := youtube.NewService(context.Background(), option.WithHTTPClient(client))
+	var uc port.PlaylistUseCase
+	var client gateway.YouTubeGateway
+	clientImpl, err := infrastructure.NewYouTubeClient(ctx, getClient(config))
 	if err != nil {
 		log.Fatalf("YouTubeサービス作成失敗: %v", err)
 	}
+	client = clientImpl
+	uc = usecase.NewPlaylistInteractor(client)
+
+	playlists, err := uc.BuildPlaylists(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, pl := range playlists {
+		fmt.Printf("再生リスト: %s (%d本)\n", pl.Title(), len(pl.Videos()))
+	}
 
 	// 自分の再生リストを取得
-	call := service.Playlists.List([]string{"snippet", "status", "contentDetails"}).Mine(true).MaxResults(50)
-	response, err := call.Do()
-	if err != nil {
-		log.Fatalf("API呼び出し失敗: %v", err)
-	}
+	// call := service.Playlists.List([]string{"snippet", "status", "contentDetails"}).Mine(true).MaxResults(50)
+	// playListsRes, err := call.Do()
+	// if err != nil {
+	// 	log.Fatalf("API呼び出し失敗: %v", err)
+	// }
 
 	// 結果を表示
-	for _, item := range response.Items {
-		fmt.Printf("再生リスト: %s (%s) - %d本\n", item.Snippet.Title, item.Id, item.ContentDetails.ItemCount)
-	}
-	fmt.Println(response)
+	// for _, item := range playListsRes.Items {
+	// 	fmt.Printf("再生リスト: %s (%s) - %d本\n", item.Snippet.Title, item.Id, item.ContentDetails.ItemCount)
+	// }
+	// fmt.Println(playListsRes)
+
 	// id : 再生リストID
+	// var playListIds []string
+	// for _, item := range playListsRes.Items {
+	// 	playListIds = append(playListIds, item.Id)
+	// }
+	// fmt.Println(playListIds)
 
 	// JSONとして保存（任意）
-	f, _ := os.Create("my_playlists.json")
-	defer f.Close()
-	json.NewEncoder(f).Encode(response)
+	// f, _ := os.Create("my_playlists.json")
+	// defer f.Close()
+	// json.NewEncoder(f).Encode(playListsRes)
 
 	/* ----------------- */
 	/* 試しに再生リストに含まれる動画リストを取得するAPIを1回コールしてみる
@@ -63,16 +83,16 @@ func main() {
 	// 再生リスト1件ずつしか指定できない -> 再生リストの数分並行でリクエスト
 	// 1度に最大50件の動画までしか取得できないため、再生リストに含まれる動画が51件以上ある場合は、複数回コール
 	*/
-	call2 := service.PlaylistItems.List([]string{"snippet"}).PlaylistId("test").MaxResults(50)
-	response2, err := call2.Do()
-	if err != nil {
-		log.Fatalf("API呼び出し失敗: %v", err)
-	}
+	// call2 := service.PlaylistItems.List([]string{"snippet"}).PlaylistId("test").MaxResults(50)
+	// playListItemsRes, err := call2.Do()
+	// if err != nil {
+	// 	log.Fatalf("API呼び出し失敗: %v", err)
+	// }
 
 	// JSONとして保存（任意）
-	f2, _ := os.Create("my_playlist_items.json")
-	defer f2.Close()
-	json.NewEncoder(f2).Encode(response2)
+	// f2, _ := os.Create("my_playlist_items.json")
+	// defer f2.Close()
+	// json.NewEncoder(f2).Encode(playListItemsRes)
 	// items[n].resourceId.videoId : 動画ID
 	// items[n].title : 動画タイトル
 	// items[n].videoOwnerChannelId : 投稿者チャンネルID
@@ -81,6 +101,7 @@ func main() {
 	/* ----------------- */
 
 	// 一致する動画IDの動画に動画の詳細をマージしていく
+	// 再生リストごとに
 
 	// 旧情報と新情報を比較し、見れなくなった動画の情報を書き込む
 }
