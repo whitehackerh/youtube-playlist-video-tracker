@@ -6,7 +6,7 @@ type Playlist struct {
 	videos []Video
 }
 
-func NewPlayList(
+func NewPlaylist(
 	id string,
 	title string,
 	videos []Video,
