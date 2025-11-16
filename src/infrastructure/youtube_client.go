@@ -30,8 +30,27 @@ func (c *YouTubeClient) FetchPlaylists(ctx context.Context) ([]*youtube.Playlist
 			return nil, err
 		}
 		result = append(result, resp.Items...)
-		// NextPageTokenには1度のコールで取得できる最大件数を上回って要素が存在する場合に提供される
+		// NextPageTokenは1度のコールで取得できる最大件数よりも多く要素が存在する場合に提供される
 		// NextPageTokenをPageTokenの引数に渡すことで次のデータを取得できる
+		if resp.NextPageToken == "" {
+			break
+		}
+		pageToken = resp.NextPageToken
+	}
+
+	return result, nil
+}
+
+func (c *YouTubeClient) FetchVideos(ctx context.Context, playlistId string) ([]*youtube.PlaylistItem, error) {
+	var result []*youtube.PlaylistItem
+	pageToken := ""
+
+	for {
+		resp, err := c.service.PlaylistItems.List([]string{"snippet"}).PlaylistId(playlistId).MaxResults(50).PageToken(pageToken).Do()
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, resp.Items...)
 		if resp.NextPageToken == "" {
 			break
 		}
