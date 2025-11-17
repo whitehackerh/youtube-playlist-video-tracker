@@ -2,9 +2,8 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"sync"
-	"youtube-playlist-video-tracker/src/domain/entity"
+	"youtube-playlist-video-tracker/src/entity"
 	"youtube-playlist-video-tracker/src/usecase/gateway"
 
 	"google.golang.org/api/youtube/v3"
@@ -22,11 +21,6 @@ func (uc *PlaylistInteractor) BuildPlaylists(ctx context.Context) ([]entity.Play
 	yPlaylists, err := uc.client.FetchPlaylists(ctx)
 	if err != nil {
 		return nil, err
-	}
-
-	// TODO DELETE
-	for _, item := range yPlaylists {
-		fmt.Printf("再生リスト: %s (%s) - %d本\n", item.Snippet.Title, item.Id, item.ContentDetails.ItemCount)
 	}
 
 	type result struct {
@@ -56,7 +50,7 @@ func (uc *PlaylistInteractor) BuildPlaylists(ctx context.Context) ([]entity.Play
 				if item.Snippet == nil || item.Snippet.ResourceId == nil {
 					continue
 				}
-				videos = append(videos, entity.NewVideo(item.Snippet.ResourceId.VideoId, item.Snippet.Title, item.Snippet.VideoOwnerChannelId, item.Snippet.VideoOwnerChannelTitle))
+				videos = append(videos, entity.NewVideo(item.Snippet.ResourceId.VideoId, item.Snippet.VideoOwnerChannelId, item.Snippet.VideoOwnerChannelTitle, item.Snippet.Title))
 			}
 
 			results <- result{
@@ -77,9 +71,6 @@ func (uc *PlaylistInteractor) BuildPlaylists(ctx context.Context) ([]entity.Play
 		}
 		playlists = append(playlists, r.playlist)
 	}
-
-	// TODO DELETE
-	fmt.Println(playlists)
 
 	return playlists, nil
 }

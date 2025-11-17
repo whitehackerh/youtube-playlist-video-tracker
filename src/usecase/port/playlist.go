@@ -2,7 +2,7 @@ package port
 
 import (
 	"context"
-	"youtube-playlist-video-tracker/src/domain/entity"
+	"youtube-playlist-video-tracker/src/entity"
 )
 
 type PlaylistUseCase interface {
