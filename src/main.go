@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"os"
 	"youtube-playlist-video-tracker/src/infrastructure"
+	"youtube-playlist-video-tracker/src/infrastructure/jsonstore"
 	"youtube-playlist-video-tracker/src/usecase"
+	"youtube-playlist-video-tracker/src/usecase/converter"
 	"youtube-playlist-video-tracker/src/usecase/gateway"
 	"youtube-playlist-video-tracker/src/usecase/port"
 
@@ -44,24 +46,16 @@ func main() {
 	client = clientImpl
 	uc = usecase.NewPlaylistInteractor(client)
 
-	playlists, err := uc.BuildPlaylists(ctx)
+	currentPlaylists, err := uc.BuildPlaylists(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// TODO DELETE
-	for _, pl := range playlists {
-		fmt.Printf("再生リスト: %s (%d本)\n", pl.Title(), len(pl.Videos()))
-	}
-
-	// JSONとして保存（任意）
-	// f, _ := os.Create("my_playlists.json")
-	// defer f.Close()
-	// json.NewEncoder(f).Encode(playListsRes)
-
 	/* ----------------- */
 
-	// 再生リストごとに旧情報と新情報を比較し、見れなくなった動画の情報を書き込む
+	// TODO 再生リストごとに旧情報と新情報を比較し、見れなくなった動画の情報を書き込む
+
+	jsonstore.WritePlaylistsToJson("../playlists.json", converter.ToPlaylistDTOs(currentPlaylists))
 }
 
 func loadCredentials(path string) ([]byte, error) {
@@ -74,7 +68,7 @@ func loadCredentials(path string) ([]byte, error) {
 }
 
 func getClient(config *oauth2.Config) *http.Client {
-	tokenFile := "token.json"
+	tokenFile := "config/token.json"
 	tok, err := tokenFromFile(tokenFile)
 	if err != nil {
 		tok = getTokenFromWeb(config)
