@@ -21,3 +21,15 @@ func ToVideoDTOs(videos []entity.Video) []jsonstore.Video {
 	}
 	return dtos
 }
+
+func ToVideoEntity(v jsonstore.Video) entity.Video {
+	return entity.NewVideo(v.Id, v.ChannelId, v.ChannelTitle, v.Title)
+}
+
+func ToVideoEntities(videos []jsonstore.Video) []entity.Video {
+	var entities []entity.Video
+	for _, v := range videos {
+		entities = append(entities, ToVideoEntity(v))
+	}
+	return entities
+}

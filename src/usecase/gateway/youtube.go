@@ -8,5 +8,6 @@ import (
 
 type YouTubeGateway interface {
 	FetchPlaylists(ctx context.Context) ([]*youtube.Playlist, error)
-	FetchVideos(ctx context.Context, playlistId string) ([]*youtube.PlaylistItem, error)
+	FetchPlaylistItems(ctx context.Context, playlistId string) ([]*youtube.PlaylistItem, error)
+	FetchVideos(ctx context.Context, ids []string) ([]*youtube.Video, error)
 }

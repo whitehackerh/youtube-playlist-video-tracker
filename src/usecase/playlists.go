@@ -5,6 +5,7 @@ import (
 	"sync"
 	"youtube-playlist-video-tracker/src/entity"
 	"youtube-playlist-video-tracker/src/usecase/gateway"
+	"youtube-playlist-video-tracker/src/usecase/port"
 
 	"google.golang.org/api/youtube/v3"
 )
@@ -13,7 +14,7 @@ type PlaylistInteractor struct {
 	client gateway.YouTubeGateway
 }
 
-func NewPlaylistInteractor(client gateway.YouTubeGateway) *PlaylistInteractor {
+func NewPlaylistInteractor(client gateway.YouTubeGateway) port.PlaylistUseCase {
 	return &PlaylistInteractor{client: client}
 }
 
@@ -32,14 +33,14 @@ func (uc *PlaylistInteractor) BuildPlaylists(ctx context.Context) ([]entity.Play
 	var wg sync.WaitGroup
 
 	// NOTE
-	// Playlistsのレスポンスだけでは動画の情報が足りないため、再生リストIDをもとに、再生リストに含まれる動画の情報を取得するAPI(PlayListItems)をコール
+	// Playlistsのレスポンスだけでは動画の情報が足りないため、再生リストIDをもとに、再生リストに含まれる動画の情報を取得するAPI(PlaylistItems)をコール
 	// PlaylistItemsは再生リスト1つしか指定できない -> 再生リストの数分並行でコール
 	for _, pl := range yPlaylists {
 		wg.Add(1)
 		go func(pl *youtube.Playlist) {
 			defer wg.Done()
 
-			items, err := uc.client.FetchVideos(ctx, pl.Id)
+			items, err := uc.client.FetchPlaylistItems(ctx, pl.Id)
 			if err != nil {
 				results <- result{err: err}
 				return
