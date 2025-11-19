@@ -59,7 +59,3 @@ func (c *YouTubeClient) FetchPlaylistItems(ctx context.Context, playlistId strin
 
 	return result, nil
 }
-
-func (c *YouTubeClient) FetchVideos(ctx context.Context, ids []string) ([]*youtube.Video, error) {
-	return []*youtube.Video{}, nil
-}

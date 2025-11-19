@@ -52,6 +52,9 @@ func main() {
 		log.Fatal(err)
 		return
 	}
+	if len(currentPlaylists) <= 0 {
+		return
+	}
 
 	prevPlaylists, err := jsonstore.ReadPlaylistsFromJson(playlistsFilePath)
 	if err != nil {
@@ -60,12 +63,11 @@ func main() {
 	}
 
 	if len(prevPlaylists) > 0 {
-		unavailableVideoUc := usecase.NewUnavailableVideoInteractor(client)
-		unavailableVideos, err := unavailableVideoUc.DetectUnavailableVideos(ctx, converter.ToPlaylistEntities(prevPlaylists), currentPlaylists)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
+		unavailableVideoUc := usecase.NewUnavailableVideoInteractor()
+		unavailableVideos := unavailableVideoUc.DetectUnavailableVideos(converter.ToPlaylistEntities(prevPlaylists), currentPlaylists)
+
+		// TODO DELETE
+		fmt.Println(unavailableVideos)
 
 		// TODO 見れなくなった動画の情報を書き込む
 		if len(unavailableVideos) > 0 {

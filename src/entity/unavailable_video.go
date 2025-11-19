@@ -7,6 +7,8 @@ type UnavailableVideo struct {
 	channelId     string
 	channelTitle  string
 	videoTitle    string
+	reason        string
+	detectedTime  string
 }
 
 func NewUnavailableVideo(
@@ -16,6 +18,8 @@ func NewUnavailableVideo(
 	channelId string,
 	channelTitle string,
 	videoTitle string,
+	reason string,
+	detectedTime string,
 ) UnavailableVideo {
 	return UnavailableVideo{
 		playlistId:    playlistId,
@@ -24,6 +28,8 @@ func NewUnavailableVideo(
 		channelId:     channelId,
 		channelTitle:  channelTitle,
 		videoTitle:    videoTitle,
+		reason:        reason,
+		detectedTime:  detectedTime,
 	}
 }
 
@@ -49,4 +55,12 @@ func (u *UnavailableVideo) ChannelTitle() string {
 
 func (u *UnavailableVideo) VideoTitle() string {
 	return u.videoTitle
+}
+
+func (u *UnavailableVideo) Reason() string {
+	return u.reason
+}
+
+func (u *UnavailableVideo) DetectedTime() string {
+	return u.detectedTime
 }
