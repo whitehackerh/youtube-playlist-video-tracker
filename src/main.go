@@ -12,7 +12,6 @@ import (
 	"youtube-playlist-video-tracker/src/usecase"
 	"youtube-playlist-video-tracker/src/usecase/converter"
 	"youtube-playlist-video-tracker/src/usecase/gateway"
-	"youtube-playlist-video-tracker/src/usecase/port"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -21,6 +20,7 @@ import (
 
 const (
 	credentialsFilePath string = "config/credentials.json"
+	playlistsFilePath   string = "../playlists.json"
 )
 
 func main() {
@@ -35,27 +35,47 @@ func main() {
 	config, err := google.ConfigFromJSON(credentials, youtube.YoutubeReadonlyScope)
 	if err != nil {
 		log.Fatalf("OAuth設定の読み込み失敗: %v", err)
+		return
 	}
 
-	var uc port.PlaylistUseCase
 	var client gateway.YouTubeGateway
 	clientImpl, err := infrastructure.NewYouTubeClient(ctx, getClient(config))
 	if err != nil {
 		log.Fatalf("YouTubeサービス作成失敗: %v", err)
+		return
 	}
 	client = clientImpl
-	uc = usecase.NewPlaylistInteractor(client)
 
-	currentPlaylists, err := uc.BuildPlaylists(ctx)
+	playlistUc := usecase.NewPlaylistInteractor(client)
+	currentPlaylists, err := playlistUc.BuildPlaylists(ctx)
 	if err != nil {
 		log.Fatal(err)
+		return
+	}
+	if len(currentPlaylists) <= 0 {
+		return
 	}
 
-	/* ----------------- */
+	prevPlaylists, err := jsonstore.ReadPlaylistsFromJson(playlistsFilePath)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
-	// TODO 再生リストごとに旧情報と新情報を比較し、見れなくなった動画の情報を書き込む
+	if len(prevPlaylists) > 0 {
+		unavailableVideoUc := usecase.NewUnavailableVideoInteractor()
+		unavailableVideos := unavailableVideoUc.DetectUnavailableVideos(converter.ToPlaylistEntities(prevPlaylists), currentPlaylists)
 
-	jsonstore.WritePlaylistsToJson("../playlists.json", converter.ToPlaylistDTOs(currentPlaylists))
+		// TODO DELETE
+		fmt.Println(unavailableVideos)
+
+		// TODO 見れなくなった動画の情報を書き込む
+		if len(unavailableVideos) > 0 {
+
+		}
+	}
+
+	jsonstore.WritePlaylistsToJson(playlistsFilePath, converter.ToPlaylistDTOs(currentPlaylists))
 }
 
 func loadCredentials(path string) ([]byte, error) {

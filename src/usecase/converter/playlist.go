@@ -20,3 +20,15 @@ func ToPlaylistDTOs(playlists []entity.Playlist) []jsonstore.Playlist {
 	}
 	return dtos
 }
+
+func ToPlaylistEntity(p jsonstore.Playlist) entity.Playlist {
+	return entity.NewPlaylist(p.Id, p.Title, ToVideoEntities(p.Videos))
+}
+
+func ToPlaylistEntities(playlists []jsonstore.Playlist) []entity.Playlist {
+	var entities []entity.Playlist
+	for _, p := range playlists {
+		entities = append(entities, ToPlaylistEntity(p))
+	}
+	return entities
+}

@@ -41,7 +41,7 @@ func (c *YouTubeClient) FetchPlaylists(ctx context.Context) ([]*youtube.Playlist
 	return result, nil
 }
 
-func (c *YouTubeClient) FetchVideos(ctx context.Context, playlistId string) ([]*youtube.PlaylistItem, error) {
+func (c *YouTubeClient) FetchPlaylistItems(ctx context.Context, playlistId string) ([]*youtube.PlaylistItem, error) {
 	var result []*youtube.PlaylistItem
 	pageToken := ""
 
