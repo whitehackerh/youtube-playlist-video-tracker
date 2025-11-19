@@ -41,7 +41,7 @@ func (uc *UnavailableVideoInteractor) DetectUnavailableVideos(prev []entity.Play
 		}
 	}
 
-	detectedTime := time.Now().Format("2006-01-02")
+	detectedTime := time.Now().Format(time.DateTime)
 	var result []entity.UnavailableVideo
 	for _, pl := range prev {
 		for _, v := range pl.Videos() {
