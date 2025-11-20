@@ -58,8 +58,8 @@ func (uc *UnavailableVideoInteractor) DetectUnavailableVideos(prev []entity.Play
 					v.ChannelId(),
 					v.ChannelTitle(),
 					v.Title(),
-					detectedTime,
 					uc.classifyUnavailableReason(c.Title()),
+					detectedTime,
 				))
 			}
 		}

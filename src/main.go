@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 	"youtube-playlist-video-tracker/src/infrastructure"
 	"youtube-playlist-video-tracker/src/infrastructure/jsonstore"
 	"youtube-playlist-video-tracker/src/usecase"
@@ -24,6 +25,7 @@ const (
 )
 
 func main() {
+	bootTime := time.Now().Format("2006-01-02_15-04-05")
 	ctx := context.Background()
 
 	credentials, err := loadCredentials(credentialsFilePath)
@@ -66,11 +68,10 @@ func main() {
 		unavailableVideoUc := usecase.NewUnavailableVideoInteractor()
 		unavailableVideos := unavailableVideoUc.DetectUnavailableVideos(converter.ToPlaylistEntities(prevPlaylists), currentPlaylists)
 
-		// TODO DELETE
-		fmt.Println(unavailableVideos)
-
-		// TODO 見れなくなった動画の情報を書き込む
 		if len(unavailableVideos) > 0 {
+			if err := jsonstore.WriteUnavailableVideosToJson("../Unavailable Videos/"+bootTime+".json", converter.ToUnavailableVideoDTOs(unavailableVideos)); err != nil {
+				return
+			}
 
 		}
 	}
