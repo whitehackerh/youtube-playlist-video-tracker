@@ -72,7 +72,6 @@ func main() {
 			if err := jsonstore.WriteUnavailableVideosToJson("../Unavailable Videos/"+bootTime+".json", converter.ToUnavailableVideoDTOs(unavailableVideos)); err != nil {
 				return
 			}
-
 		}
 	}
 
