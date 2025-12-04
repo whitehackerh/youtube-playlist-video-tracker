@@ -41,7 +41,7 @@ func main() {
 	}
 
 	var client gateway.YouTubeGateway
-	clientImpl, err := infrastructure.NewYouTubeClient(ctx, getClient(config))
+	clientImpl, err := infrastructure.NewYouTubeClient(ctx, getClient(ctx, config))
 	if err != nil {
 		log.Fatalf("YouTubeサービス作成失敗: %v", err)
 		return
@@ -87,12 +87,26 @@ func loadCredentials(path string) ([]byte, error) {
 	return b, nil
 }
 
-func getClient(config *oauth2.Config) *http.Client {
+func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 	tokenFile := "config/token.json"
 	tok, err := tokenFromFile(tokenFile)
 	if err != nil {
 		tok = getTokenFromWeb(config)
 		saveToken(tokenFile, tok)
+	} else {
+		// 有効期限チェック
+		if !tok.Valid() || tok.Expiry.Before(time.Now()) {
+			// リフレッシュ試行
+			ts := config.TokenSource(ctx, tok)
+			newTok, err := ts.Token()
+			if err != nil {
+				// リフレッシュ失敗 → 再認証
+				fmt.Println("トークン更新失敗、再認証します")
+				newTok = getTokenFromWeb(config)
+			}
+			saveToken(tokenFile, newTok)
+			tok = newTok
+		}
 	}
 	return config.Client(context.Background(), tok)
 }
