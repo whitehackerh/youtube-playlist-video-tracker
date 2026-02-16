@@ -8,7 +8,7 @@ import (
 
 type UnavailableVideoInteractor struct{}
 
-func NewUnavailableVideoInteractor() port.UnavalilableVideoUseCase {
+func NewUnavailableVideoInteractor() port.UnavailableVideoUseCase {
 	return &UnavailableVideoInteractor{}
 }
 

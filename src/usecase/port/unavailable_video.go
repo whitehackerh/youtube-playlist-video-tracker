@@ -4,6 +4,6 @@ import (
 	"youtube-playlist-video-tracker/src/entity"
 )
 
-type UnavalilableVideoUseCase interface {
+type UnavailableVideoUseCase interface {
 	DetectUnavailableVideos(prev []entity.Playlist, current []entity.Playlist) []entity.UnavailableVideo
 }
